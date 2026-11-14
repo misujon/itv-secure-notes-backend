@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Models\Note;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use MongoDB\BSON\ObjectId;
 
 class NoteRepository
@@ -61,5 +62,28 @@ class NoteRepository
     public function delete(Note $note): bool
     {
         return (bool) $note->delete();
+    }
+
+    public function countAll(): int
+    {
+        return Note::query()->count();
+    }
+
+    public function countForUser(string $userId): int
+    {
+        return Note::query()->where('user_id', new ObjectId($userId))->count();
+    }
+
+    /**
+     * @return Collection<int, Note>
+     */
+    public function recent(int $limit = 5): Collection
+    {
+        return Note::query()
+            ->with('user')
+            ->orderByDesc('created_at')
+            ->orderByDesc('_id')
+            ->limit($limit)
+            ->get();
     }
 }

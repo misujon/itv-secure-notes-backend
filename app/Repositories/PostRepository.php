@@ -36,6 +36,16 @@ class PostRepository
         return Post::query()->create($data);
     }
 
+    public function countAll(): int
+    {
+        return Post::query()->count();
+    }
+
+    public function countForUser(string $userId): int
+    {
+        return Post::query()->where('user_id', new ObjectId($userId))->count();
+    }
+
     /**
      * Retrieve a user and their paginated posts using a single $lookup aggregation pipeline.
      *

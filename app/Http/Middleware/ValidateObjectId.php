@@ -16,7 +16,11 @@ class ValidateObjectId
         $value = $request->route($parameter);
 
         if (! is_string($value) || preg_match('/^[a-f\d]{24}$/i', $value) !== 1) {
-            return ApiResponse::error('Invalid resource identifier format.', 422);
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return ApiResponse::error('Invalid resource identifier format.', 422);
+            }
+
+            abort(404, 'Resource not found.');
         }
 
         return $next($request);

@@ -46,11 +46,25 @@ Start the API server:
 php artisan serve
 ```
 
+Build frontend assets for the Blade Administration Portal:
+
+```bash
+npm install
+npm run build
+```
+
+Access the Admin Portal at:
+
+- `http://127.0.0.1:8000/admin/login` (Session-authenticated, `admin` role required)
+
 ## Project Architecture
 
-The application follows a layered request lifecycle:
+The application serves both a stateless **REST API** (JWT via `api` guard) and a **Laravel Blade Administration Portal** (session-authenticated via `web` guard), sharing the same MongoDB models, Services, Repositories, and authorization policies:
 
-`API Route -> Middleware (auth:api, role, object.id, throttle) -> Controller -> Form Request Validation -> Service -> Repository -> MongoDB Eloquent Model -> MongoDB`
+- **REST API**: `API Route -> Middleware (auth:api, role, object.id, throttle) -> API Controller -> Form Request -> Service -> Repository -> MongoDB`
+- **Admin Portal**: `Web Route -> Middleware (auth:web, role:admin, object.id, throttle) -> Admin Controller -> Form Request -> Service -> Repository -> MongoDB -> Blade + Tailwind CSS + Alpine.js`
+
+- **Authorization & Permissions**: Centralized in `App\Enums\UserRole`, `App\Enums\Permission`, and `App\Auth\RolePermissionRegistry`, registered as Laravel `Gate` definitions and enforced in `NotePolicy` and `EnsureUserHasRole`. Admin inherits all User permissions plus user management, read-only visibility across all notes, and interest-group aggregation, while note edits/deletes remain strictly owner-only.
 
 - **Controllers** (`app/Http/Controllers/Api/V1/`): Thin HTTP handlers delegating validation to Form Requests, business logic to Services, and formatting output with API Resources and `App\Support\ApiResponse`.
 - **Services** (`app/Services/`): `AuthService`, `UserService`, `NoteService`, `PostService`, `AggregationService`.

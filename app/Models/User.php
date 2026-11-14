@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Auth\RolePermissionRegistry;
+use App\Enums\Permission;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -66,9 +69,25 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+    public function roleEnum(): ?UserRole
+    {
+        return UserRole::tryFrom((string) $this->role);
+    }
+
+    public function hasPermission(Permission $permission): bool
+    {
+        $role = $this->roleEnum();
+
+        if ($role === null) {
+            return false;
+        }
+
+        return RolePermissionRegistry::hasPermission($role, $permission);
+    }
+
     public function isAdmin(): bool
     {
-        return $this->role === self::ROLE_ADMIN;
+        return $this->roleEnum() === UserRole::Admin;
     }
 
     /**

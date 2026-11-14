@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\ObjectId;
 
@@ -56,6 +57,45 @@ class UserRepository
     public function countAdmins(): int
     {
         return User::query()->where('role', User::ROLE_ADMIN)->count();
+    }
+
+    public function countAll(): int
+    {
+        return User::query()->count();
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function recent(int $limit = 5): Collection
+    {
+        return User::query()
+            ->orderByDesc('created_at')
+            ->orderByDesc('_id')
+            ->limit($limit)
+            ->get();
+    }
+
+    public function paginateForAdmin(?string $search = null, ?string $role = null, int $perPage = 15): LengthAwarePaginator
+    {
+        $query = User::query();
+
+        if ($role !== null && $role !== '') {
+            $query->where('role', $role);
+        }
+
+        if ($search !== null && trim($search) !== '') {
+            $term = trim($search);
+            $query->where(function ($subQuery) use ($term): void {
+                $subQuery->where('name', 'like', '%'.$term.'%')
+                    ->orWhere('email', 'like', '%'.$term.'%');
+            });
+        }
+
+        return $query
+            ->orderByDesc('created_at')
+            ->orderByDesc('_id')
+            ->paginate($perPage);
     }
 
     /**

@@ -16,11 +16,19 @@ class EnsureUserHasRole
         $user = $request->user();
 
         if ($user === null) {
-            return ApiResponse::error('Unauthenticated.', 401);
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return ApiResponse::error('Unauthenticated.', 401);
+            }
+
+            return redirect()->guest(route('admin.login'));
         }
 
         if (! in_array($user->role, $roles, true)) {
-            return ApiResponse::error('Forbidden. Insufficient permissions.', 403);
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return ApiResponse::error('Forbidden. Insufficient permissions.', 403);
+            }
+
+            abort(403, 'You do not have permission to access the administration portal.');
         }
 
         return $next($request);

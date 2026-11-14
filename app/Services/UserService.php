@@ -22,6 +22,11 @@ class UserService
         return $this->userRepository->paginate($perPage);
     }
 
+    public function listUsersForAdmin(?string $search = null, ?string $role = null, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->userRepository->paginateForAdmin($search, $role, $perPage);
+    }
+
     public function getUserById(string $id): User
     {
         $user = $this->userRepository->findById($id);
@@ -104,5 +109,40 @@ class UserService
         }
 
         $this->userRepository->delete($user);
+    }
+
+    /**
+     * Update the authenticated user's own profile without allowing role changes.
+     *
+     * @param  array{name?: string, email?: string, password?: string|null, interests?: array<int, string>}  $data
+     */
+    public function updateProfile(User $user, array $data): User
+    {
+        $attributes = [];
+
+        if (array_key_exists('name', $data)) {
+            $attributes['name'] = trim($data['name']);
+        }
+
+        if (array_key_exists('email', $data)) {
+            $email = strtolower(trim($data['email']));
+            $existing = $this->userRepository->findByEmail($email);
+
+            if ($existing !== null && (string) $existing->_id !== (string) $user->_id) {
+                throw new BusinessException('Email is already taken.', 422);
+            }
+
+            $attributes['email'] = $email;
+        }
+
+        if (isset($data['password']) && $data['password'] !== '') {
+            $attributes['password'] = Hash::make($data['password']);
+        }
+
+        if (array_key_exists('interests', $data)) {
+            $attributes['interests'] = User::normalizeInterests($data['interests']);
+        }
+
+        return $this->userRepository->update($user, $attributes);
     }
 }
