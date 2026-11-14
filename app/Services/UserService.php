@@ -54,6 +54,8 @@ class UserService
             'email' => $email,
             'password' => Hash::make($data['password']),
             'role' => $data['role'],
+            'roles' => [$data['role']],
+            'permissions' => [],
             'interests' => User::normalizeInterests($data['interests'] ?? []),
         ]);
     }
@@ -91,6 +93,7 @@ class UserService
             }
 
             $attributes['role'] = $data['role'];
+            $attributes['roles'] = [$data['role']];
         }
 
         if (array_key_exists('interests', $data)) {

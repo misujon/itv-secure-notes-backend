@@ -25,6 +25,8 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('Password123!'),
             'role' => User::ROLE_USER,
+            'roles' => [User::ROLE_USER],
+            'permissions' => [],
             'interests' => ['reading', 'coding'],
         ];
     }
@@ -33,6 +35,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'role' => User::ROLE_ADMIN,
+            'roles' => [User::ROLE_ADMIN],
         ]);
     }
 }

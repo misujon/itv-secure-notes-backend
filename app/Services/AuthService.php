@@ -33,6 +33,8 @@ class AuthService
             'email' => $email,
             'password' => Hash::make($data['password']),
             'role' => User::ROLE_USER,
+            'roles' => [User::ROLE_USER],
+            'permissions' => [],
             'interests' => User::normalizeInterests($data['interests'] ?? []),
         ]);
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\BusinessException;
+use App\Http\Middleware\EnsureUserHasPermission;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\ValidateObjectId;
 use App\Support\ApiResponse;
@@ -35,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
+            'permission' => EnsureUserHasPermission::class,
             'object.id' => ValidateObjectId::class,
         ]);
     })

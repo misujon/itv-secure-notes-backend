@@ -23,7 +23,7 @@ class EnsureUserHasRole
             return redirect()->guest(route('admin.login'));
         }
 
-        if (! in_array($user->role, $roles, true)) {
+        if (! $user->hasAnyRole(...$roles)) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return ApiResponse::error('Forbidden. Insufficient permissions.', 403);
             }

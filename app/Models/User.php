@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Auth\RolePermissionRegistry;
 use App\Enums\Permission;
 use App\Enums\UserRole;
+use App\Traits\HasMongoRoles;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,7 +16,7 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory;
+    use HasFactory, HasMongoRoles;
 
     public const ROLE_USER = 'user';
 
@@ -34,6 +34,8 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'password',
         'role',
+        'roles',
+        'permissions',
         'interests',
     ];
 
@@ -76,18 +78,12 @@ class User extends Authenticatable implements JWTSubject
 
     public function hasPermission(Permission $permission): bool
     {
-        $role = $this->roleEnum();
-
-        if ($role === null) {
-            return false;
-        }
-
-        return RolePermissionRegistry::hasPermission($role, $permission);
+        return $this->hasPermissionTo($permission);
     }
 
     public function isAdmin(): bool
     {
-        return $this->roleEnum() === UserRole::Admin;
+        return $this->hasRole(UserRole::Admin);
     }
 
     /**
