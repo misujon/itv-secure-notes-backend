@@ -119,7 +119,7 @@ class UserRepository
         $skip = ($page - 1) * $perPage;
 
         $pipeline = [
-            ['$match' => ['deleted_at' => null]],
+            ['$match' => ['deleted_at' => null, 'interests' => ['$exists' => true, '$ne' => []]]],
             ['$unwind' => '$interests'],
             [
                 '$group' => [

@@ -30,9 +30,18 @@ class IndexVerificationTest extends TestCase
             iterator_to_array($database->selectCollection('posts')->listIndexes())
         );
 
-        $this->assertEqualsCanonicalizing(['_id_', 'users_email_unique'], $userIndexes);
-        $this->assertEqualsCanonicalizing(['_id_', 'notes_user_created_id_idx'], $noteIndexes);
-        $this->assertEqualsCanonicalizing(['_id_', 'posts_user_created_id_idx'], $postIndexes);
+        $this->assertEqualsCanonicalizing(
+            ['_id_', 'users_email_unique', 'users_deleted_created_id_idx', 'users_deleted_interests_idx'],
+            $userIndexes
+        );
+        $this->assertEqualsCanonicalizing(
+            ['_id_', 'notes_user_created_id_idx', 'notes_deleted_created_id_idx'],
+            $noteIndexes
+        );
+        $this->assertEqualsCanonicalizing(
+            ['_id_', 'posts_user_created_id_idx', 'posts_deleted_created_id_idx'],
+            $postIndexes
+        );
     }
 
     public function test_notes_and_posts_queries_use_compound_indexes(): void

@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::connection('mongodb')->create('notes', function (Blueprint $collection): void {
             $collection->index(['user_id' => 1, 'created_at' => -1, '_id' => -1], 'notes_user_created_id_idx');
+            $collection->index(['deleted_at' => 1, 'created_at' => -1, '_id' => -1], 'notes_deleted_created_id_idx');
         });
     }
 
@@ -21,6 +22,7 @@ return new class extends Migration
     {
         Schema::connection('mongodb')->table('notes', function (Blueprint $collection): void {
             $collection->dropIndex('notes_user_created_id_idx');
+            $collection->dropIndex('notes_deleted_created_id_idx');
         });
         Schema::connection('mongodb')->dropIfExists('notes');
     }

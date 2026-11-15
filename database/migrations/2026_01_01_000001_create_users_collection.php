@@ -14,6 +14,8 @@ return new class extends Migration
     {
         Schema::connection('mongodb')->create('users', function (Blueprint $collection): void {
             $collection->unique('email', 'users_email_unique');
+            $collection->index(['deleted_at' => 1, 'created_at' => -1, '_id' => -1], 'users_deleted_created_id_idx');
+            $collection->index(['deleted_at' => 1, 'interests' => 1], 'users_deleted_interests_idx');
         });
     }
 
@@ -21,6 +23,8 @@ return new class extends Migration
     {
         Schema::connection('mongodb')->table('users', function (Blueprint $collection): void {
             $collection->dropIndex('users_email_unique');
+            $collection->dropIndex('users_deleted_created_id_idx');
+            $collection->dropIndex('users_deleted_interests_idx');
         });
         Schema::connection('mongodb')->dropIfExists('users');
     }
