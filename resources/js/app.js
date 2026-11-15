@@ -1,5 +1,6 @@
 //
 import Alpine from 'alpinejs';
+import './rich-editor';
 
 window.Alpine = Alpine;
 

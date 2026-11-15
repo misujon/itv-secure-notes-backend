@@ -56,7 +56,7 @@
                                     @endif
                                 </td>
                                 <td class="max-w-xs truncate px-6 py-4 text-app-muted">
-                                    {{ \Illuminate\Support\Str::limit((string) $note->content, 70) }}
+                                    {{ \Illuminate\Support\Str::limit(\App\Support\HtmlSanitizer::toPlainText((string) $note->content), 70) }}
                                 </td>
                                 <td class="px-6 py-4 text-app-muted">
                                     {{ $note->created_at?->format('M j, Y') }}
@@ -65,9 +65,14 @@
                                     {{ $note->updated_at?->format('M j, Y') }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <a href="{{ route('admin.notes.show', (string) $note->_id) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">
-                                        View
-                                    </a>
+                                    <div class="inline-flex items-center gap-3">
+                                        <a href="{{ route('admin.notes.show', (string) $note->_id) }}" class="text-xs font-medium text-slate-600 hover:text-app-heading">
+                                            View
+                                        </a>
+                                        <a href="{{ route('admin.notes.edit', (string) $note->_id) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">
+                                            Edit
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

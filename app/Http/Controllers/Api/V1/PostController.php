@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Post\StorePostRequest;
+use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\User;
 use App\Services\AggregationService;
@@ -49,6 +50,18 @@ class PostController extends Controller
         return ApiResponse::success(
             PostResource::make($post)->resolve(),
             'Post retrieved successfully.'
+        );
+    }
+
+    public function update(UpdatePostRequest $request, string $id): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $post = $this->postService->updateForUser($user, $id, $request->validated());
+
+        return ApiResponse::success(
+            PostResource::make($post)->resolve(),
+            'Post updated successfully.'
         );
     }
 

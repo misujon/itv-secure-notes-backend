@@ -79,6 +79,26 @@ class NoteService
         return $this->noteRepository->update($note, $attributes);
     }
 
+    /**
+     * @param  array{title?: string, content?: string}  $data
+     */
+    public function updateForAdmin(string $id, array $data): Note
+    {
+        $note = $this->findOrFail($id);
+
+        $attributes = [];
+
+        if (array_key_exists('title', $data)) {
+            $attributes['title'] = trim($data['title']);
+        }
+
+        if (array_key_exists('content', $data)) {
+            $attributes['content'] = $data['content'];
+        }
+
+        return $this->noteRepository->update($note, $attributes);
+    }
+
     public function deleteForUser(User $user, string $id): void
     {
         $note = $this->findOrFail($id);

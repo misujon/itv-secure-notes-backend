@@ -19,11 +19,9 @@
             <x-admin.button variant="secondary" :href="route('admin.notes.index')">
                 Back to All Notes
             </x-admin.button>
-            @can('update', $note)
-                <x-admin.button :href="route('admin.my-notes.edit', (string) $note->_id)">
-                    Edit in My Notes
-                </x-admin.button>
-            @endcan
+            <x-admin.button :href="route('admin.notes.edit', (string) $note->_id)">
+                Edit Note
+            </x-admin.button>
         </x-slot:actions>
     </x-admin.page-heading>
 
@@ -36,6 +34,6 @@
             @endif
         </div>
 
-        <div class="whitespace-pre-wrap text-sm leading-relaxed text-app-heading">{{ $note->content }}</div>
+        <div class="rich-text-content text-sm leading-relaxed text-app-heading">{!! \App\Support\HtmlSanitizer::toSafeHtml($note->content) !!}</div>
     </x-admin.card>
 @endsection

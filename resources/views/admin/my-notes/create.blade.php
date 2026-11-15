@@ -16,13 +16,13 @@
         subtitle="Add a new personal note."
     />
 
-    <x-admin.card class="max-w-2xl">
+    <x-admin.card class="max-w-3xl">
         <form method="POST" action="{{ route('admin.my-notes.store') }}" class="space-y-5">
             @csrf
 
             <x-admin.input label="Title" name="title" required />
 
-            <x-admin.textarea label="Content" name="content" rows="8" required />
+            <x-admin.rich-editor label="Content" name="content" placeholder="Write your note..." required />
 
             <div class="flex items-center justify-end gap-3 border-t border-app-border pt-5">
                 <x-admin.button variant="secondary" :href="route('admin.my-notes.index')">

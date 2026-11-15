@@ -233,4 +233,64 @@ class AdminPortalTest extends TestCase
             ->assertSee('Post Author')
             ->assertSee('MongoDB Lookup Post');
     }
+
+    public function test_admin_can_edit_any_note_in_all_notes_section(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $owner = User::factory()->create(['name' => 'Regular Owner']);
+        $note = Note::factory()->create([
+            'user_id' => $owner->_id,
+            'title' => 'Original User Note',
+            'content' => '<p>Original content</p>',
+        ]);
+
+        $this->actingAs($admin, 'web');
+
+        $this->get('/admin/notes/'.$note->_id.'/edit')
+            ->assertOk()
+            ->assertSee('Original User Note');
+
+        $this->patch('/admin/notes/'.$note->_id, [
+            'title' => 'Admin Edited Note',
+            'content' => '<p>Updated by admin</p>',
+        ])->assertRedirect(route('admin.notes.show', (string) $note->_id));
+
+        $fresh = $note->fresh();
+        $this->assertSame('Admin Edited Note', $fresh?->title);
+        $this->assertSame('<p>Updated by admin</p>', $fresh?->content);
+    }
+
+    public function test_admin_can_list_create_edit_and_delete_posts(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $author = User::factory()->create(['name' => 'Community Author']);
+        $post = Post::factory()->create([
+            'user_id' => $author->_id,
+            'title' => 'Community Post',
+            'content' => '<p>Community body</p>',
+        ]);
+
+        $this->actingAs($admin, 'web');
+
+        $this->get('/admin/posts')
+            ->assertOk()
+            ->assertSee('Community Post')
+            ->assertSee('Community Author');
+
+        $this->get('/admin/posts/'.$post->_id.'/edit')
+            ->assertOk()
+            ->assertSee('Community Post');
+
+        $this->patch('/admin/posts/'.$post->_id, [
+            'title' => 'Edited Community Post',
+            'content' => '<p>Updated community body</p>',
+        ])->assertRedirect(route('admin.posts.show', (string) $post->_id));
+
+        $this->assertSame('Edited Community Post', $post->fresh()?->title);
+
+        $this->delete('/admin/posts/'.$post->_id)
+            ->assertRedirect(route('admin.posts.index'));
+
+        $this->assertNull(Post::query()->find($post->_id));
+    }
 }

@@ -36,6 +36,22 @@ class PostRepository
         return Post::query()->create($data);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function update(Post $post, array $data): Post
+    {
+        $post->fill($data);
+        $post->save();
+
+        return $post->fresh(['user']) ?? $post;
+    }
+
+    public function delete(Post $post): bool
+    {
+        return (bool) $post->delete();
+    }
+
     public function countAll(): int
     {
         return Post::query()->count();

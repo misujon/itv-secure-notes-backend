@@ -49,7 +49,7 @@
                                     {{ $note->title }}
                                 </td>
                                 <td class="max-w-sm truncate px-6 py-4 text-app-muted">
-                                    {{ \Illuminate\Support\Str::limit((string) $note->content, 80) }}
+                                    {{ \Illuminate\Support\Str::limit(\App\Support\HtmlSanitizer::toPlainText((string) $note->content), 80) }}
                                 </td>
                                 <td class="px-6 py-4 text-app-muted">
                                     {{ $note->updated_at?->format('M j, Y') }}

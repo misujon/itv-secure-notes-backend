@@ -64,6 +64,7 @@ Route::prefix('v1')->group(function (): void {
 
         Route::middleware('object.id')->group(function (): void {
             Route::get('/{id}', [PostController::class, 'show']);
+            Route::patch('/{id}', [PostController::class, 'update'])->middleware('auth:api');
         });
     });
 

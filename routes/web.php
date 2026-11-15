@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InterestController;
 use App\Http\Controllers\Admin\MyNoteController;
+use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserPostController;
@@ -43,6 +44,21 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
             Route::middleware('object.id:note')->group(function (): void {
                 Route::get('/{note}', [AllNoteController::class, 'show'])->name('show');
+                Route::get('/{note}/edit', [AllNoteController::class, 'edit'])->name('edit');
+                Route::match(['put', 'patch'], '/{note}', [AllNoteController::class, 'update'])->name('update');
+            });
+        });
+
+        Route::prefix('posts')->name('posts.')->group(function (): void {
+            Route::get('/', [AdminPostController::class, 'index'])->name('index');
+            Route::get('/create', [AdminPostController::class, 'create'])->name('create');
+            Route::post('/', [AdminPostController::class, 'store'])->name('store');
+
+            Route::middleware('object.id:post')->group(function (): void {
+                Route::get('/{post}', [AdminPostController::class, 'show'])->name('show');
+                Route::get('/{post}/edit', [AdminPostController::class, 'edit'])->name('edit');
+                Route::match(['put', 'patch'], '/{post}', [AdminPostController::class, 'update'])->name('update');
+                Route::delete('/{post}', [AdminPostController::class, 'destroy'])->name('destroy');
             });
         });
 

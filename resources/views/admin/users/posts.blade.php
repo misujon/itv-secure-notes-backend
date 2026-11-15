@@ -35,13 +35,20 @@
                     <article class="p-6">
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <h3 class="text-base font-semibold text-app-heading">{{ $post['title'] }}</h3>
-                            @if (! empty($post['created_at']))
-                                <time class="text-xs text-app-muted">
-                                    {{ \Illuminate\Support\Carbon::parse($post['created_at'])->format('M j, Y g:i A') }}
-                                </time>
-                            @endif
+                            <div class="flex items-center gap-3">
+                                @if (! empty($post['created_at']))
+                                    <time class="text-xs text-app-muted">
+                                        {{ \Illuminate\Support\Carbon::parse($post['created_at'])->format('M j, Y g:i A') }}
+                                    </time>
+                                @endif
+                                @if (! empty($post['id']))
+                                    <a href="{{ route('admin.posts.edit', $post['id']) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">
+                                        Edit
+                                    </a>
+                                @endif
+                            </div>
                         </div>
-                        <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{{ $post['content'] }}</p>
+                        <div class="rich-text-content mt-2 text-sm leading-relaxed text-slate-600">{!! \App\Support\HtmlSanitizer::toSafeHtml($post['content'] ?? '') !!}</div>
                     </article>
                 @endforeach
             </div>
