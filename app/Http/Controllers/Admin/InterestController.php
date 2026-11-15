@@ -16,6 +16,9 @@ class InterestController extends Controller
         private readonly AggregationService $aggregationService,
     ) {}
 
+    /**
+     * Render users grouped by their profile interests via MongoDB aggregation.
+     */
     public function __invoke(Request $request): View
     {
         $page = max((int) $request->integer('page', 1), 1);

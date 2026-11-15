@@ -20,6 +20,9 @@ class MyNoteController extends Controller
         private readonly NoteService $noteService,
     ) {}
 
+    /**
+     * List personal notes belonging to the signed-in administrator.
+     */
     public function index(Request $request): View
     {
         /** @var User $user */
@@ -31,11 +34,17 @@ class MyNoteController extends Controller
         ]);
     }
 
+    /**
+     * Show the form to create a personal note for the signed-in administrator.
+     */
     public function create(): View
     {
         return view('admin.my-notes.create');
     }
 
+    /**
+     * Store a new personal note for the signed-in administrator.
+     */
     public function store(StoreNoteRequest $request): RedirectResponse
     {
         /** @var User $user */
@@ -47,6 +56,9 @@ class MyNoteController extends Controller
             ->with('success', 'Note created successfully.');
     }
 
+    /**
+     * Show the edit form for a personal note owned by the signed-in administrator.
+     */
     public function edit(Request $request, string $note): View
     {
         /** @var User $user */
@@ -60,6 +72,9 @@ class MyNoteController extends Controller
         ]);
     }
 
+    /**
+     * Update a personal note owned by the signed-in administrator.
+     */
     public function update(UpdateNoteRequest $request, string $note): RedirectResponse
     {
         /** @var User $user */
@@ -71,6 +86,9 @@ class MyNoteController extends Controller
             ->with('success', 'Note updated successfully.');
     }
 
+    /**
+     * Soft-delete a personal note owned by the signed-in administrator.
+     */
     public function destroy(Request $request, string $note): RedirectResponse
     {
         /** @var User $user */

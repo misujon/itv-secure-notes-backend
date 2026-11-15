@@ -19,6 +19,9 @@ class PostController extends Controller
         private readonly PostService $postService,
     ) {}
 
+    /**
+     * List all public posts (or trashed posts) in the admin portal.
+     */
     public function index(Request $request): View
     {
         $onlyTrashed = $request->boolean('trashed');
@@ -30,11 +33,17 @@ class PostController extends Controller
         ]);
     }
 
+    /**
+     * Show the form to publish a new public post.
+     */
     public function create(): View
     {
         return view('admin.posts.create');
     }
 
+    /**
+     * Store a newly published public post authored by the signed-in admin.
+     */
     public function store(StorePostRequest $request): RedirectResponse
     {
         /** @var User $user */
@@ -46,6 +55,9 @@ class PostController extends Controller
             ->with('status', 'Post published successfully.');
     }
 
+    /**
+     * Display a single public post in the admin portal.
+     */
     public function show(string $post): View
     {
         $record = $this->postService->getPostById($post);
@@ -55,6 +67,9 @@ class PostController extends Controller
         ]);
     }
 
+    /**
+     * Show the admin edit form for a public post.
+     */
     public function edit(string $post): View
     {
         $record = $this->postService->getPostById($post);
@@ -64,6 +79,9 @@ class PostController extends Controller
         ]);
     }
 
+    /**
+     * Update a public post in the admin portal.
+     */
     public function update(UpdatePostRequest $request, string $post): RedirectResponse
     {
         /** @var User $user */
@@ -75,6 +93,9 @@ class PostController extends Controller
             ->with('status', 'Post updated successfully.');
     }
 
+    /**
+     * Soft-delete a public post and move it to the admin trash.
+     */
     public function destroy(Request $request, string $post): RedirectResponse
     {
         /** @var User $user */
@@ -86,6 +107,9 @@ class PostController extends Controller
             ->with('status', 'Post moved to trash.');
     }
 
+    /**
+     * Restore a soft-deleted post from the admin trash.
+     */
     public function restore(string $post): RedirectResponse
     {
         $this->postService->restoreForAdmin($post);

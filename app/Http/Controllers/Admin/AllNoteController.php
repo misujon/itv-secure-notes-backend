@@ -17,6 +17,9 @@ class AllNoteController extends Controller
         private readonly NoteService $noteService,
     ) {}
 
+    /**
+     * List all notes (or trashed notes) across all users in the admin portal.
+     */
     public function index(Request $request): View
     {
         $onlyTrashed = $request->boolean('trashed');
@@ -28,6 +31,9 @@ class AllNoteController extends Controller
         ]);
     }
 
+    /**
+     * Display a single user note in the admin portal.
+     */
     public function show(string $note): View
     {
         $record = $this->noteService->getForAdmin($note);
@@ -37,6 +43,9 @@ class AllNoteController extends Controller
         ]);
     }
 
+    /**
+     * Show the admin edit form for any user note.
+     */
     public function edit(string $note): View
     {
         $record = $this->noteService->getForAdmin($note);
@@ -46,6 +55,9 @@ class AllNoteController extends Controller
         ]);
     }
 
+    /**
+     * Persist admin updates to any user note.
+     */
     public function update(UpdateNoteRequest $request, string $note): RedirectResponse
     {
         $this->noteService->updateForAdmin($note, $request->validated());
@@ -55,6 +67,9 @@ class AllNoteController extends Controller
             ->with('status', 'Note updated successfully.');
     }
 
+    /**
+     * Soft-delete a note and move it to the admin trash.
+     */
     public function destroy(string $note): RedirectResponse
     {
         $this->noteService->deleteForAdmin($note);
@@ -64,6 +79,9 @@ class AllNoteController extends Controller
             ->with('status', 'Note moved to trash.');
     }
 
+    /**
+     * Restore a soft-deleted note from the admin trash.
+     */
     public function restore(string $note): RedirectResponse
     {
         $this->noteService->restoreForAdmin($note);

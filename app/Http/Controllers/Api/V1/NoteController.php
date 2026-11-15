@@ -20,6 +20,9 @@ class NoteController extends Controller
         private readonly NoteService $noteService,
     ) {}
 
+    /**
+     * Paginate private notes belonging to the authenticated user.
+     */
     public function index(Request $request): JsonResponse
     {
         /** @var User $user */
@@ -31,6 +34,9 @@ class NoteController extends Controller
         return ApiResponse::paginated($notes, NoteResource::class);
     }
 
+    /**
+     * Store a new private note for the authenticated user.
+     */
     public function store(StoreNoteRequest $request): JsonResponse
     {
         /** @var User $user */
@@ -44,6 +50,9 @@ class NoteController extends Controller
         );
     }
 
+    /**
+     * Retrieve a single note owned by the authenticated user.
+     */
     public function show(Request $request, string $id): JsonResponse
     {
         /** @var User $user */
@@ -56,6 +65,9 @@ class NoteController extends Controller
         );
     }
 
+    /**
+     * Update an existing note owned by the authenticated user.
+     */
     public function update(UpdateNoteRequest $request, string $id): JsonResponse
     {
         /** @var User $user */
@@ -68,6 +80,9 @@ class NoteController extends Controller
         );
     }
 
+    /**
+     * Soft-delete a note owned by the authenticated user.
+     */
     public function destroy(Request $request, string $id): JsonResponse
     {
         /** @var User $user */

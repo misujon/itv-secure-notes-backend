@@ -17,17 +17,25 @@ class NoteService
         private readonly NoteRepository $noteRepository,
     ) {}
 
+    /**
+     * Paginate active notes belonging to the given user.
+     */
     public function listForUser(User $user, int $perPage = 20): LengthAwarePaginator
     {
         return $this->noteRepository->paginateForUser((string) $user->_id, $perPage);
     }
 
+    /**
+     * Paginate all notes (or trashed notes) for the admin portal.
+     */
     public function listAllForAdmin(int $perPage = 20, bool $onlyTrashed = false): LengthAwarePaginator
     {
         return $this->noteRepository->paginateAll($perPage, $onlyTrashed);
     }
 
     /**
+     * Create a new private note owned by the given user.
+     *
      * @param  array{title: string, content: string}  $data
      */
     public function createForUser(User $user, array $data): Note
@@ -39,6 +47,9 @@ class NoteService
         ]);
     }
 
+    /**
+     * Fetch a single note and authorize ownership/admin access via policy.
+     */
     public function getForUser(User $user, string $id): Note
     {
         $note = $this->findOrFail($id);
@@ -47,6 +58,9 @@ class NoteService
         return $note;
     }
 
+    /**
+     * Fetch any note with its author relation for the admin portal.
+     */
     public function getForAdmin(string $id): Note
     {
         $note = $this->noteRepository->findById($id, withUser: true);
@@ -59,6 +73,8 @@ class NoteService
     }
 
     /**
+     * Update a note after verifying user ownership via policy.
+     *
      * @param  array{title?: string, content?: string}  $data
      */
     public function updateForUser(User $user, string $id, array $data): Note
@@ -80,6 +96,8 @@ class NoteService
     }
 
     /**
+     * Update any note as an administrator without user-ownership restriction.
+     *
      * @param  array{title?: string, content?: string}  $data
      */
     public function updateForAdmin(string $id, array $data): Note
@@ -99,6 +117,9 @@ class NoteService
         return $this->noteRepository->update($note, $attributes);
     }
 
+    /**
+     * Soft-delete a note after verifying user ownership via policy.
+     */
     public function deleteForUser(User $user, string $id): void
     {
         $note = $this->findOrFail($id);
@@ -107,12 +128,18 @@ class NoteService
         $this->noteRepository->delete($note);
     }
 
+    /**
+     * Soft-delete any note as an administrator.
+     */
     public function deleteForAdmin(string $id): void
     {
         $note = $this->findOrFail($id);
         $this->noteRepository->delete($note);
     }
 
+    /**
+     * Restore a soft-deleted note by ID from the admin trash.
+     */
     public function restoreForAdmin(string $id): void
     {
         if (! $this->noteRepository->restoreById($id)) {

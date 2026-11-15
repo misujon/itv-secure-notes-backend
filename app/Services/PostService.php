@@ -17,12 +17,17 @@ class PostService
         private readonly PostRepository $postRepository,
     ) {}
 
+    /**
+     * Paginate public posts (or soft-deleted posts for admin trash).
+     */
     public function listPosts(int $perPage = 20, bool $onlyTrashed = false): LengthAwarePaginator
     {
         return $this->postRepository->paginateAll($perPage, $onlyTrashed);
     }
 
     /**
+     * Create a new public post authored by the given user.
+     *
      * @param  array{title: string, content: string}  $data
      */
     public function createForUser(User $user, array $data): Post
@@ -34,6 +39,9 @@ class PostService
         ]);
     }
 
+    /**
+     * Fetch a public post by ID or throw ModelNotFoundException.
+     */
     public function getPostById(string $id): Post
     {
         $post = $this->postRepository->findById($id);
@@ -46,6 +54,8 @@ class PostService
     }
 
     /**
+     * Update a post after verifying author/admin authorization via policy.
+     *
      * @param  array{title?: string, content?: string}  $data
      */
     public function updateForUser(User $user, string $id, array $data): Post
@@ -66,6 +76,9 @@ class PostService
         return $this->postRepository->update($post, $attributes);
     }
 
+    /**
+     * Soft-delete a post after verifying author/admin authorization via policy.
+     */
     public function deleteForUser(User $user, string $id): void
     {
         $post = $this->getPostById($id);
@@ -74,6 +87,9 @@ class PostService
         $this->postRepository->delete($post);
     }
 
+    /**
+     * Restore a soft-deleted post by ID from the admin trash.
+     */
     public function restoreForAdmin(string $id): void
     {
         if (! $this->postRepository->restoreById($id)) {

@@ -11,6 +11,9 @@ use Illuminate\Http\JsonResponse;
 
 class InterestController extends Controller
 {
+    /**
+     * List all active admin-managed interests sorted alphabetically.
+     */
     public function index(): JsonResponse
     {
         $interests = Interest::query()

@@ -19,6 +19,9 @@ class ProfileController extends Controller
         private readonly UserService $userService,
     ) {}
 
+    /**
+     * Show the signed-in administrator's own profile edit form.
+     */
     public function edit(Request $request): View
     {
         /** @var User $user */
@@ -29,6 +32,9 @@ class ProfileController extends Controller
         ]);
     }
 
+    /**
+     * Update the signed-in administrator's profile without modifying role.
+     */
     public function update(UpdateProfileRequest $request): RedirectResponse
     {
         /** @var User $user */

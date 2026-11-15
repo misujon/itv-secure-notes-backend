@@ -17,6 +17,9 @@ class NoteController extends Controller
         private readonly NoteService $noteService,
     ) {}
 
+    /**
+     * Paginate all notes across all users for administrators.
+     */
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 20), 1), 100);
@@ -25,6 +28,9 @@ class NoteController extends Controller
         return ApiResponse::paginated($notes, NoteResource::class);
     }
 
+    /**
+     * Retrieve any user's note by ID for administrators.
+     */
     public function show(string $id): JsonResponse
     {
         $note = $this->noteService->getForAdmin($id);

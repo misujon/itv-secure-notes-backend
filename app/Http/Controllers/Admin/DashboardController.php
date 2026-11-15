@@ -18,6 +18,9 @@ class DashboardController extends Controller
         private readonly PostRepository $postRepository,
     ) {}
 
+    /**
+     * Render the admin dashboard with collection counts and recent users/notes.
+     */
     public function __invoke(): View
     {
         return view('admin.dashboard', [

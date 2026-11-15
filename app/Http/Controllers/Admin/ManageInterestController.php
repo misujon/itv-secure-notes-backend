@@ -13,6 +13,9 @@ use MongoDB\BSON\ObjectId;
 
 class ManageInterestController extends Controller
 {
+    /**
+     * List active or trashed admin-managed interests.
+     */
     public function index(Request $request): View
     {
         $onlyTrashed = $request->boolean('trashed');
@@ -26,11 +29,17 @@ class ManageInterestController extends Controller
         ]);
     }
 
+    /**
+     * Show the form to create a new selectable interest.
+     */
     public function create(): View
     {
         return view('admin.interests.manage.create');
     }
 
+    /**
+     * Create a new normalized interest or restore a matching trashed interest.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -62,6 +71,9 @@ class ManageInterestController extends Controller
             ->with('success', 'Interest created successfully.');
     }
 
+    /**
+     * Show the edit form for an interest.
+     */
     public function edit(string $interest): View
     {
         $record = Interest::query()->where('_id', new ObjectId($interest))->firstOrFail();
@@ -71,6 +83,9 @@ class ManageInterestController extends Controller
         ]);
     }
 
+    /**
+     * Update an existing interest name after normalizing and checking uniqueness.
+     */
     public function update(Request $request, string $interest): RedirectResponse
     {
         $record = Interest::query()->where('_id', new ObjectId($interest))->firstOrFail();
@@ -101,6 +116,9 @@ class ManageInterestController extends Controller
             ->with('success', 'Interest updated successfully.');
     }
 
+    /**
+     * Soft-delete an interest and move it to the trash.
+     */
     public function destroy(string $interest): RedirectResponse
     {
         $record = Interest::query()->where('_id', new ObjectId($interest))->firstOrFail();
@@ -110,6 +128,9 @@ class ManageInterestController extends Controller
             ->with('success', 'Interest moved to trash.');
     }
 
+    /**
+     * Restore a soft-deleted interest from the trash.
+     */
     public function restore(string $interest): RedirectResponse
     {
         $record = Interest::onlyTrashed()->where('_id', new ObjectId($interest))->firstOrFail();

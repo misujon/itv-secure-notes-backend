@@ -17,16 +17,25 @@ class UserService
         private readonly UserRepository $userRepository,
     ) {}
 
+    /**
+     * Paginate active users for the REST API.
+     */
     public function listUsers(int $perPage = 20): LengthAwarePaginator
     {
         return $this->userRepository->paginate($perPage);
     }
 
+    /**
+     * Paginate users for the admin portal with optional search, role filter, and trash toggle.
+     */
     public function listUsersForAdmin(?string $search = null, ?string $role = null, int $perPage = 15, bool $onlyTrashed = false): LengthAwarePaginator
     {
         return $this->userRepository->paginateForAdmin($search, $role, $perPage, $onlyTrashed);
     }
 
+    /**
+     * Restore a soft-deleted user account by ID.
+     */
     public function restoreUser(string $id): void
     {
         if (! $this->userRepository->restoreById($id)) {
@@ -34,6 +43,9 @@ class UserService
         }
     }
 
+    /**
+     * Fetch a user by ID or throw ModelNotFoundException.
+     */
     public function getUserById(string $id): User
     {
         $user = $this->userRepository->findById($id);
@@ -46,6 +58,8 @@ class UserService
     }
 
     /**
+     * Create a new user account as an administrator with explicit role assignment.
+     *
      * @param  array{name: string, email: string, password: string, role: string, interests?: array<int, string>}  $data
      */
     public function createUser(array $data): User
@@ -68,6 +82,8 @@ class UserService
     }
 
     /**
+     * Update a user's details or role as an administrator, preventing demotion of the last admin.
+     *
      * @param  array{name?: string, email?: string, password?: string, role?: string, interests?: array<int, string>}  $data
      */
     public function updateUser(string $id, array $data): User
@@ -110,6 +126,9 @@ class UserService
         return $this->userRepository->update($user, $attributes);
     }
 
+    /**
+     * Soft-delete a user account, preventing deletion of the last remaining admin.
+     */
     public function deleteUser(string $id): void
     {
         $user = $this->getUserById($id);

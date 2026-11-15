@@ -18,6 +18,8 @@ class AuthService
     ) {}
 
     /**
+     * Register a new regular user account, normalize interests, and issue a JWT token.
+     *
      * @param  array{name: string, email: string, password: string, interests?: array<int, string>}  $data
      * @return array{token: string, token_type: string, expires_in: int, user: User}
      */
@@ -45,6 +47,8 @@ class AuthService
     }
 
     /**
+     * Authenticate a user by email and password and issue a JWT token.
+     *
      * @param  array{email: string, password: string}  $credentials
      * @return array{token: string, token_type: string, expires_in: int, user: User}
      */
@@ -62,6 +66,9 @@ class AuthService
         return $this->tokenPayload((string) $token, $user);
     }
 
+    /**
+     * Return the currently authenticated JWT user or throw 401.
+     */
     public function me(): User
     {
         /** @var User|null $user */
@@ -74,12 +81,17 @@ class AuthService
         return $user;
     }
 
+    /**
+     * Invalidate the current JWT token.
+     */
     public function logout(): void
     {
         $this->guard()->logout();
     }
 
     /**
+     * Refresh the current JWT token and return a new token payload.
+     *
      * @return array{token: string, token_type: string, expires_in: int, user: User}
      */
     public function refresh(): array
@@ -90,6 +102,8 @@ class AuthService
     }
 
     /**
+     * Update the authenticated user's profile (name, email, interests) without allowing role changes.
+     *
      * @param  array{name: string, email: string, interests?: array<int, string>}  $data
      */
     public function updateProfile(User $user, array $data): User
@@ -115,6 +129,9 @@ class AuthService
         return $this->userRepository->update($user, $attributes);
     }
 
+    /**
+     * Verify the user's current password and update it to a new hashed password.
+     */
     public function updatePassword(User $user, string $currentPassword, string $newPassword): void
     {
         if (! Hash::check($currentPassword, $user->password)) {

@@ -19,6 +19,9 @@ class UserController extends Controller
         private readonly UserService $userService,
     ) {}
 
+    /**
+     * Paginate all active users for administrators.
+     */
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 20), 1), 100);
@@ -27,6 +30,9 @@ class UserController extends Controller
         return ApiResponse::paginated($users, UserResource::class);
     }
 
+    /**
+     * Create a new user account as an administrator.
+     */
     public function store(StoreUserRequest $request): JsonResponse
     {
         $user = $this->userService->createUser($request->validated());
@@ -38,6 +44,9 @@ class UserController extends Controller
         );
     }
 
+    /**
+     * Retrieve a single user account by ID for administrators.
+     */
     public function show(string $id): JsonResponse
     {
         $user = $this->userService->getUserById($id);
@@ -48,6 +57,9 @@ class UserController extends Controller
         );
     }
 
+    /**
+     * Update a user's details or role as an administrator.
+     */
     public function update(UpdateUserRequest $request, string $id): JsonResponse
     {
         $user = $this->userService->updateUser($id, $request->validated());
@@ -58,6 +70,9 @@ class UserController extends Controller
         );
     }
 
+    /**
+     * Soft-delete a user account as an administrator.
+     */
     public function destroy(string $id): JsonResponse
     {
         $this->userService->deleteUser($id);

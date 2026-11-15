@@ -20,6 +20,9 @@ class AuthController extends Controller
         private readonly AuthService $authService,
     ) {}
 
+    /**
+     * Register a new user account and return a JWT token payload.
+     */
     public function register(RegisterRequest $request): JsonResponse
     {
         $result = $this->authService->register($request->validated());
@@ -32,6 +35,9 @@ class AuthController extends Controller
         ], 'User registered successfully.', 201);
     }
 
+    /**
+     * Authenticate a user with email and password and return a JWT token payload.
+     */
     public function login(LoginRequest $request): JsonResponse
     {
         $result = $this->authService->login($request->validated());
@@ -44,6 +50,9 @@ class AuthController extends Controller
         ], 'Logged in successfully.');
     }
 
+    /**
+     * Retrieve the currently authenticated user's profile.
+     */
     public function me(): JsonResponse
     {
         $user = $this->authService->me();
@@ -54,6 +63,9 @@ class AuthController extends Controller
         );
     }
 
+    /**
+     * Update the authenticated user's name, email, and interests.
+     */
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
         $user = $this->authService->updateProfile(
@@ -67,6 +79,9 @@ class AuthController extends Controller
         );
     }
 
+    /**
+     * Change the authenticated user's password after verifying the current password.
+     */
     public function updatePassword(UpdatePasswordRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -80,6 +95,9 @@ class AuthController extends Controller
         return ApiResponse::success(null, 'Password updated successfully.');
     }
 
+    /**
+     * Invalidate the authenticated user's current JWT token.
+     */
     public function logout(): JsonResponse
     {
         $this->authService->logout();
@@ -87,6 +105,9 @@ class AuthController extends Controller
         return ApiResponse::success(null, 'Logged out successfully.');
     }
 
+    /**
+     * Issue a refreshed JWT token for the authenticated user.
+     */
     public function refresh(): JsonResponse
     {
         $result = $this->authService->refresh();

@@ -1,163 +1,141 @@
-# Secure Note-Taking Application — Backend API
+# Secure Notes — Laravel & MongoDB Backend
 
-A secure, maintainable REST API backend for a note-taking platform built with **Laravel 13**, **PHP 8.4**, **MongoDB Community Server**, **`mongodb/laravel-mongodb`**, and **JWT authentication** (`php-open-source-saver/jwt-auth`).
+REST API and Blade Administration Portal for the **Secure Notes** application, built with **Laravel 13**, **PHP 8.4**, **MongoDB (`mongodb/laravel-mongodb`)**, and **JWT Authentication (`php-open-source-saver/jwt-auth`)**.
 
-## Installation
+---
 
-### Prerequisites
+## 1. Prerequisites
 
-- PHP 8.3+ (tested on PHP 8.4.23) with the `mongodb` PHP extension
-- Composer
-- MongoDB Community Server (running locally or via connection URI)
+- **PHP 8.4+** with the `mongodb` PHP extension installed and enabled (`php -m | grep mongodb`)
+- **Composer 2.x**
+- **MongoDB 7.x+** running locally (default: `mongodb://127.0.0.1:27017`)
+- **Node.js 20+ & npm** (for Vite/Tailwind assets in the Blade Admin Portal)
 
-### Setup
+---
 
-```bash
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan jwt:secret
-```
+## 2. Local Installation & Setup
 
-Configure MongoDB and CORS in `.env`:
+1. **Navigate to the backend directory:**
+   ```bash
+   cd secure-notes-backend
+   ```
 
-```env
-DB_CONNECTION=mongodb
-MONGODB_URI=mongodb://127.0.0.1:27017
-MONGODB_DATABASE=secure_notes
-CORS_ALLOWED_ORIGINS=http://localhost:3000
-```
+2. **Install PHP and frontend dependencies:**
+   ```bash
+   composer install
+   npm install
+   ```
 
-Run database migrations to create collections and MongoDB indexes:
+3. **Create and configure `.env`:**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   php artisan jwt:secret
+   ```
 
-```bash
-php artisan migrate
-```
+   Update your `.env` with the MongoDB connection settings:
+   ```dotenv
+   APP_NAME="Secure Notes"
+   APP_URL=http://127.0.0.1:8000
 
-Create the initial admin account (interactive or via flags; no credentials are hardcoded):
+   DB_CONNECTION=mongodb
+   MONGODB_URI=mongodb://127.0.0.1:27017
+   MONGODB_DATABASE=secure_notes
 
-```bash
-php artisan app:create-admin --name="Admin User" --email="admin@example.com" --password="StrongPassword123!"
-```
+   # Use file/cookie or mongodb-compatible session/cache drivers for local development
+   SESSION_DRIVER=file
+   CACHE_STORE=file
+   ```
 
-Start the API server:
+4. **Run database migrations (creates MongoDB collections & `schema.index` indexes):**
+   ```bash
+   php artisan migrate
+   ```
 
-```bash
-php artisan serve
-```
+5. **Seed roles, default interests, and demo accounts:**
+   ```bash
+   php artisan db:seed
+   ```
 
-Build frontend assets for the Blade Administration Portal:
+6. **Build admin portal assets and start the server:**
+   ```bash
+   npm run build
+   php artisan serve --host=127.0.0.1 --port=8000
+   ```
 
-```bash
-npm install
-npm run build
-```
+   - **REST API Base URL:** `http://127.0.0.1:8000/api/v1`
+   - **Blade Admin Portal:** `http://127.0.0.1:8000/admin/login`
 
-Access the Admin Portal at:
+---
 
-- `http://127.0.0.1:8000/admin/login` (Session-authenticated, `admin` role required)
+## 3. Seeded Credentials
 
-## Project Architecture
+Running `php artisan db:seed` executes `DatabaseSeeder` and `RolePermissionSeeder`, creating:
 
-The application serves both a stateless **REST API** (JWT via `api` guard) and a **Laravel Blade Administration Portal** (session-authenticated via `web` guard), sharing the same MongoDB models, Services, Repositories, and authorization policies:
-
-- **REST API**: `API Route -> Middleware (auth:api, role, object.id, throttle) -> API Controller -> Form Request -> Service -> Repository -> MongoDB`
-- **Admin Portal**: `Web Route -> Middleware (auth:web, role:admin, object.id, throttle) -> Admin Controller -> Form Request -> Service -> Repository -> MongoDB -> Blade + Tailwind CSS + Alpine.js`
-
-- **Authorization & Permissions**: Centralized in `App\Enums\UserRole`, `App\Enums\Permission`, and `App\Auth\RolePermissionRegistry`, registered as Laravel `Gate` definitions and enforced in `NotePolicy` and `EnsureUserHasRole`. Admin inherits all User permissions plus user management, read-only visibility across all notes, and interest-group aggregation, while note edits/deletes remain strictly owner-only.
-
-- **Controllers** (`app/Http/Controllers/Api/V1/`): Thin HTTP handlers delegating validation to Form Requests, business logic to Services, and formatting output with API Resources and `App\Support\ApiResponse`.
-- **Services** (`app/Services/`): `AuthService`, `UserService`, `NoteService`, `PostService`, `AggregationService`.
-- **Repositories** (`app/Repositories/`): `UserRepository`, `NoteRepository`, `PostRepository` encapsulating Eloquent queries, pagination, and native MongoDB aggregation pipelines.
-- **Models** (`app/Models/`): `User` (extends `MongoDB\Laravel\Auth\User` and implements `JWTSubject`), `Note`, and `Post` (extend `MongoDB\Laravel\Eloquent\Model` with `ObjectId` casting on `user_id`).
-- **Authorization**: `NotePolicy` enforces owner-only note mutations and read isolation; `EnsureUserHasRole` middleware enforces `admin` role boundaries.
-- **Security**: `Hash::make()` / `Hash::check()` password hashing, `ValidateObjectId` middleware for 24-hex ObjectId validation, login rate limiting (`5/min`), restricted CORS (`config/cors.php`), and centralized exception handling (`bootstrap/app.php`) that never leaks raw database errors.
-
-## API Endpoint Summary
-
-All endpoints are prefixed with `/api/v1`.
-
-### Authentication
-
-| Method | Endpoint | Auth | Description |
+| Role | Email | Password | Access |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/auth/register` | Public | Register a new `user` account and issue JWT |
-| `POST` | `/auth/login` | Public (throttled) | Authenticate user and issue JWT |
-| `GET` | `/auth/me` | `auth:api` | Get current authenticated user profile |
-| `POST` | `/auth/logout` | `auth:api` | Invalidate current JWT |
-| `POST` | `/auth/refresh` | `auth:api` | Refresh current JWT |
+| **Admin** | `admin@test.com` | `Hello@123!` | Blade Admin Portal (`/admin/login`) + REST API |
+| **User** | `user@test.com` | `Hello@123!` | REST API / Next.js User Workspace |
 
-### Notes (Authenticated Owner)
+Default seeded interests: `chess`, `reading`, `coding`, `photography`, `music`.
 
-| Method | Endpoint | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/notes` | `auth:api` | List authenticated user's notes (paginated) |
-| `POST` | `/notes` | `auth:api` | Create a note owned by the authenticated user |
-| `GET` | `/notes/{id}` | `auth:api` | Retrieve a specific note (owner or admin) |
-| `PATCH` | `/notes/{id}` | `auth:api` | Update an owned note |
-| `DELETE` | `/notes/{id}` | `auth:api` | Delete an owned note |
+---
 
-### Admin Management (`role:admin`)
+## 4. Architecture & Key Directories
 
-| Method | Endpoint | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/admin/users` | `auth:api`, `role:admin` | List all users (paginated) |
-| `POST` | `/admin/users` | `auth:api`, `role:admin` | Create a user or admin |
-| `GET` | `/admin/users/{id}` | `auth:api`, `role:admin` | View user details |
-| `PATCH` | `/admin/users/{id}` | `auth:api`, `role:admin` | Update user (protects last admin) |
-| `DELETE` | `/admin/users/{id}` | `auth:api`, `role:admin` | Delete user (protects last admin) |
-| `GET` | `/admin/notes` | `auth:api`, `role:admin` | List all users' notes (read-only, paginated) |
-| `GET` | `/admin/notes/{id}` | `auth:api`, `role:admin` | View any note with safe user summary |
-| `GET` | `/admin/aggregations/interests` | `auth:api`, `role:admin` | Group users by interests (paginated) |
+```text
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── Api/V1/          # JWT-authenticated & public REST API controllers
+│   │   └── Admin/           # Session-authenticated Blade Admin Portal controllers
+│   ├── Requests/            # FormRequest validation classes
+│   └── Resources/           # Eloquent API Resources
+├── Models/                  # MongoDB models (User, Note, Post, Interest, Role, Permission)
+├── Policies/                # NotePolicy, PostPolicy (ownership + admin authorization)
+├── Repositories/            # MongoDB queries & aggregation pipelines
+└── Services/                # Business logic (AuthService, NoteService, PostService, UserService, AggregationService)
+database/
+├── migrations/              # Collection & schema.index() definitions
+└── seeders/                 # RolePermissionSeeder & DatabaseSeeder
+```
 
-### Posts & User Posts Lookup
+---
 
-| Method | Endpoint | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/posts` | Public | List public posts (paginated) |
-| `POST` | `/posts` | `auth:api` | Create a public post |
-| `GET` | `/posts/{id}` | Public | View a specific post |
-| `GET` | `/users/{id}/posts` | Public | Retrieve user and their posts via `$lookup` |
+## 5. Requirements Met
 
-## MongoDB Index Strategy
+- **JWT Authentication (`/api/v1/auth/*`)**:
+  - `POST /auth/register`, `POST /auth/login` (rate-limited), `GET /auth/me`, `PATCH /auth/me`, `PATCH /auth/password`, `POST /auth/refresh`, `POST /auth/logout`.
+  - Role escalation is blocked on registration and profile updates (`role` is always `user` on signup and ignored on profile update).
+- **Role-Based Access Control (RBAC)**:
+  - `user` and `admin` roles managed via `Role` / `Permission` models and `EnsureRole` middleware.
+  - Regular users can only read/update/delete their own private notes (`NotePolicy`).
+  - Administrators have full access in the Blade Admin Portal (`/admin/*`) to manage users, all notes, all posts, and interests.
+- **Notes & Public Posts CRUD + Rich Text**:
+  - Private Notes (`GET/POST /api/v1/notes`, `GET/PATCH/DELETE /api/v1/notes/{id}`).
+  - Public Posts (`GET/POST /api/v1/posts`, `GET/PATCH /api/v1/posts/{id}`).
+  - Sanitized HTML storage via `HtmlSanitizer` for rich-text content across both API and Blade Admin Portal (TinyMCE/Quill-compatible rich editor).
+- **Soft Deletes & Trash Restore**:
+  - `SoftDeletes` enabled on `User`, `Note`, `Post`, and `Interest`, with Trash view (`?trashed=1`) and Restore actions in the Blade Admin Portal.
+- **Interests CRUD & User Selection**:
+  - Admin CRUD for interests at `/admin/interests/manage` (`ManageInterestController`).
+  - Public endpoint `GET /api/v1/interests` consumed by the Next.js frontend during signup and profile updates.
+- **MongoDB Indexing (`schema.index`)**:
+  - Explicit indexes defined in `database/migrations/*` using `$collection->index(...)` and `$collection->unique(...)` for users, notes, posts, interests, roles, and permissions to support all list, read, and aggregation queries.
+- **MongoDB Aggregation Pipelines**:
+  - **Scenario 1 — Group by Interests**: `UserRepository::groupUsersByInterests()` uses a single `collection->aggregate()` pipeline (`$match`, `$unwind`, `$group`, `$sort`, `$facet`) exposed via `GET /api/v1/admin/aggregations/interests` and `/admin/interests`.
+  - **Scenario 2 — User Posts (`$lookup`)**: `PostRepository::getUserPostsWithLookup()` uses a single `collection->aggregate()` pipeline with `$lookup` exposed via `GET /api/v1/users/{id}/posts` and `/admin/users/{user}/posts`.
+- **Pagination**:
+  - All list endpoints and admin tables are paginated (`per_page` clamped between `1` and `100`).
 
-Indexes are defined explicitly in Laravel MongoDB schema migrations (`database/migrations/`):
+---
 
-1. **`users` collection**:
-   - Default `_id_` index (automatic).
-   - `users_email_unique` (`{ email: 1 }`, unique): Supports login lookups by email and enforces email uniqueness at the database level during registration and admin user management.
-2. **`notes` collection**:
-   - Default `_id_` index (automatic).
-   - `notes_user_created_id_idx` (`{ user_id: 1, created_at: -1, _id: -1 }`): Supports `GET /api/v1/notes` by filtering on `user_id` and satisfying the chronological `ORDER BY created_at DESC, _id DESC` sort directly from the index (`IXSCAN`) without an in-memory sort.
-3. **`posts` collection**:
-   - Default `_id_` index (automatic).
-   - `posts_user_created_id_idx` (`{ user_id: 1, created_at: -1, _id: -1 }`): Supports the `$lookup` join on `posts.user_id` and chronological sorting of a user's posts in `GET /api/v1/users/{id}/posts`.
-
-**Why additional indexes were not added**: No indexes were added on `role`, `title`, `content`, `interests`, or standalone timestamps because no required query filters or sorts on those fields independently. Keeping the index footprint minimal avoids unnecessary write amplification and memory overhead.
-
-## Aggregation Pipelines
-
-1. **Group Users by Interests (`UserRepository::groupUsersByInterests`)**:
-   - Uses a single native `aggregate()` call on `users`: `$unwind` on `$interests` -> `$group` by interest with `$sum` and safe user projection (excluding `password`) -> `$project` -> `$sort` (`user_count DESC, interest ASC`) -> `$facet` for paginated `metadata` and `data`.
-2. **User Posts with `$lookup` (`PostRepository::getUserPostsWithLookup`)**:
-   - Uses a single native `aggregate()` call on `users`: `$match` on `_id` (`BSON\ObjectId`) -> `$lookup` into `posts` matching `localField: _id` to `foreignField: user_id` (using `posts_user_created_id_idx`) with an inner `$sort` and `$facet` for paginated posts -> `$project` returning safe user details, posts, and total count (gracefully handling users with zero posts).
-
-## Testing
-
-Tests run against a dedicated `secure_notes_test` MongoDB database configured in `phpunit.xml` (never SQLite or the development database):
+## 6. Testing & Code Style
 
 ```bash
+# Run PHPUnit feature & unit tests
 php artisan test --compact
+
+# Format code with Laravel Pint
+vendor/bin/pint --dirty --format agent
 ```
-
-Test suites cover:
-- `tests/Feature/AuthTest.php`: Registration, role escalation prevention, duplicate email, login, wrong password, rate limiting, missing/invalid/expired JWT, and logout invalidation.
-- `tests/Feature/NoteTest.php`: Owner CRUD, pagination, cross-user read/update/delete prevention (`403`), and ObjectId validation (`422`).
-- `tests/Feature/AdminTest.php`: Role restrictions, user CRUD, last-admin protection, admin note viewing, and `app:create-admin`.
-- `tests/Feature/PostAndAggregationTest.php`: Public posts, interest-group aggregation (multi-interest users, pagination, no password exposure), and `$lookup` user posts aggregation (including empty posts and missing users).
-- `tests/Feature/IndexVerificationTest.php`: `listIndexes` verification and `explain()` plan assertions confirming `IXSCAN` usage.
-
-## Assessment Deviations
-
-- **Laravel + `mongodb/laravel-mongodb` instead of Node.js/Mongoose**: The original interview prompt references Mongoose and `schema.index()`. Because this backend is implemented in Laravel (PHP), indexes are defined using `MongoDB\Laravel\Schema\Blueprint` in Laravel migrations (`database/migrations/`) rather than Mongoose schemas.
-- **Backend-only scope**: Per the master prompt, only the Laravel REST API backend was implemented; the Next.js frontend is intentionally omitted.

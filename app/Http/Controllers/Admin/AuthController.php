@@ -14,6 +14,9 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    /**
+     * Show the admin portal login form or redirect if already authenticated as admin.
+     */
     public function showLogin(): View|RedirectResponse
     {
         $user = Auth::guard('web')->user();
@@ -25,6 +28,9 @@ class AuthController extends Controller
         return view('admin.auth.login');
     }
 
+    /**
+     * Authenticate an administrator via the web session guard.
+     */
     public function login(AdminLoginRequest $request): RedirectResponse
     {
         $credentials = [
@@ -56,6 +62,9 @@ class AuthController extends Controller
         return redirect()->intended(route('admin.dashboard'));
     }
 
+    /**
+     * Log out the administrator and invalidate the web session.
+     */
     public function logout(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();

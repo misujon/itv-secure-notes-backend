@@ -16,6 +16,9 @@ class UserPostController extends Controller
         private readonly AggregationService $aggregationService,
     ) {}
 
+    /**
+     * Render all public posts authored by a user via MongoDB $lookup aggregation.
+     */
     public function __invoke(Request $request, string $user): View
     {
         $page = max((int) $request->integer('page', 1), 1);

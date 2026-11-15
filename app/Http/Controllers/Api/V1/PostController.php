@@ -22,6 +22,9 @@ class PostController extends Controller
         private readonly AggregationService $aggregationService,
     ) {}
 
+    /**
+     * Paginate all public posts visible to everyone.
+     */
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->integer('per_page', 20), 1), 100);
@@ -30,6 +33,9 @@ class PostController extends Controller
         return ApiResponse::paginated($posts, PostResource::class);
     }
 
+    /**
+     * Publish a new public post authored by the authenticated user.
+     */
     public function store(StorePostRequest $request): JsonResponse
     {
         /** @var User $user */
@@ -43,6 +49,9 @@ class PostController extends Controller
         );
     }
 
+    /**
+     * Retrieve a single public post by ID.
+     */
     public function show(string $id): JsonResponse
     {
         $post = $this->postService->getPostById($id);
@@ -53,6 +62,9 @@ class PostController extends Controller
         );
     }
 
+    /**
+     * Update a public post owned by the authenticated user (or any post for admins).
+     */
     public function update(UpdatePostRequest $request, string $id): JsonResponse
     {
         /** @var User $user */
@@ -65,6 +77,9 @@ class PostController extends Controller
         );
     }
 
+    /**
+     * Retrieve paginated posts belonging to a specific user via MongoDB $lookup aggregation.
+     */
     public function userPosts(Request $request, string $id): JsonResponse
     {
         $page = max((int) $request->integer('page', 1), 1);

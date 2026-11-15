@@ -15,6 +15,9 @@ class AggregationController extends Controller
         private readonly AggregationService $aggregationService,
     ) {}
 
+    /**
+     * Return users grouped by their profile interests via MongoDB aggregation.
+     */
     public function interests(Request $request): JsonResponse
     {
         $page = max((int) $request->integer('page', 1), 1);

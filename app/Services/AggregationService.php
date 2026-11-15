@@ -17,6 +17,8 @@ class AggregationService
     ) {}
 
     /**
+     * Group users by their profile interests using a single MongoDB aggregation pipeline.
+     *
      * @return array{data: array<int, array<string, mixed>>, meta: array{current_page: int, per_page: int, total: int, last_page: int}}
      */
     public function groupUsersByInterests(int $page = 1, int $perPage = 20): array
@@ -36,6 +38,8 @@ class AggregationService
     }
 
     /**
+     * Retrieve paginated posts for a specific user via a MongoDB $lookup aggregation pipeline.
+     *
      * @return array{user: array<string, mixed>, posts: array<int, array<string, mixed>>, meta: array{current_page: int, per_page: int, total: int, last_page: int}}
      */
     public function getUserPosts(string $userId, int $page = 1, int $perPage = 20): array
