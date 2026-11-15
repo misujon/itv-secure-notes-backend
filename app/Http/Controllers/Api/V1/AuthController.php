@@ -80,32 +80,6 @@ class AuthController extends Controller
         return ApiResponse::success(null, 'Password updated successfully.');
     }
 
-    public function updateProfile(\App\Http\Requests\Auth\UpdateProfileRequest $request): JsonResponse
-    {
-        $user = $this->authService->updateProfile(
-            $this->authService->me(),
-            $request->validated()
-        );
-
-        return ApiResponse::success(
-            UserResource::make($user)->resolve(),
-            'Profile updated successfully.'
-        );
-    }
-
-    public function updatePassword(\App\Http\Requests\Auth\UpdatePasswordRequest $request): JsonResponse
-    {
-        $validated = $request->validated();
-
-        $this->authService->updatePassword(
-            $this->authService->me(),
-            $validated['current_password'],
-            $validated['password']
-        );
-
-        return ApiResponse::success(null, 'Password updated successfully.');
-    }
-
     public function logout(): JsonResponse
     {
         $this->authService->logout();
