@@ -8,6 +8,7 @@ use App\Exceptions\BusinessException;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\JWTGuard;
 
 class AuthService
@@ -86,6 +87,45 @@ class AuthService
         $token = $this->guard()->refresh();
 
         return $this->tokenPayload((string) $token, $this->me());
+    }
+
+    /**
+     * @param  array{name: string, email: string, interests?: array<int, string>}  $data
+     */
+    public function updateProfile(User $user, array $data): User
+    {
+        $email = strtolower(trim($data['email']));
+        $existing = $this->userRepository->findByEmail($email);
+
+        if ($existing !== null && (string) $existing->_id !== (string) $user->_id) {
+            throw ValidationException::withMessages([
+                'email' => ['The email has already been taken.'],
+            ]);
+        }
+
+        $attributes = [
+            'name' => trim($data['name']),
+            'email' => $email,
+        ];
+
+        if (array_key_exists('interests', $data)) {
+            $attributes['interests'] = User::normalizeInterests($data['interests'] ?? []);
+        }
+
+        return $this->userRepository->update($user, $attributes);
+    }
+
+    public function updatePassword(User $user, string $currentPassword, string $newPassword): void
+    {
+        if (! Hash::check($currentPassword, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The current password is incorrect.'],
+            ]);
+        }
+
+        $this->userRepository->update($user, [
+            'password' => Hash::make($newPassword),
+        ]);
     }
 
     /**

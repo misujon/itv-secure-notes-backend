@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\UpdatePasswordRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use App\Support\ApiResponse;
@@ -50,6 +52,58 @@ class AuthController extends Controller
             UserResource::make($user)->resolve(),
             'Authenticated user retrieved successfully.'
         );
+    }
+
+    public function updateProfile(UpdateProfileRequest $request): JsonResponse
+    {
+        $user = $this->authService->updateProfile(
+            $this->authService->me(),
+            $request->validated()
+        );
+
+        return ApiResponse::success(
+            UserResource::make($user)->resolve(),
+            'Profile updated successfully.'
+        );
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $this->authService->updatePassword(
+            $this->authService->me(),
+            $validated['current_password'],
+            $validated['password']
+        );
+
+        return ApiResponse::success(null, 'Password updated successfully.');
+    }
+
+    public function updateProfile(\App\Http\Requests\Auth\UpdateProfileRequest $request): JsonResponse
+    {
+        $user = $this->authService->updateProfile(
+            $this->authService->me(),
+            $request->validated()
+        );
+
+        return ApiResponse::success(
+            UserResource::make($user)->resolve(),
+            'Profile updated successfully.'
+        );
+    }
+
+    public function updatePassword(\App\Http\Requests\Auth\UpdatePasswordRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $this->authService->updatePassword(
+            $this->authService->me(),
+            $validated['current_password'],
+            $validated['password']
+        );
+
+        return ApiResponse::success(null, 'Password updated successfully.');
     }
 
     public function logout(): JsonResponse

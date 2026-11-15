@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Models\Interest;
 use App\Models\Note;
 use App\Models\Permission;
 use App\Models\Post;
@@ -31,5 +32,6 @@ abstract class TestCase extends BaseTestCase
         User::withTrashed()->forceDelete();
         Note::withTrashed()->forceDelete();
         Post::withTrashed()->forceDelete();
+        Interest::withTrashed()->forceDelete();
     }
 }

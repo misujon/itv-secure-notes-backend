@@ -12,7 +12,13 @@
     <x-admin.page-heading
         title="Interest Groups"
         subtitle="Users grouped by shared interests via MongoDB aggregation ($unwind, $group, $sort)."
-    />
+    >
+        <x-slot:actions>
+            <x-admin.button :href="route('admin.interests.manage.index')">
+                Manage Interests
+            </x-admin.button>
+        </x-slot:actions>
+    </x-admin.page-heading>
 
     <x-admin.card :padding="false">
         @if ($groups->isEmpty())

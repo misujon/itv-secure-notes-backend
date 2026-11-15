@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Interest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
@@ -165,5 +166,60 @@ class AuthTest extends TestCase
             ->getJson('/api/v1/auth/me')
             ->assertUnauthorized()
             ->assertJsonPath('success', false);
+    }
+
+    public function test_public_can_fetch_active_interests(): void
+    {
+        Interest::query()->create(['name' => 'chess']);
+        $deleted = Interest::query()->create(['name' => 'archived']);
+        $deleted->delete();
+
+        $this->getJson('/api/v1/interests')
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'chess');
+    }
+
+    public function test_authenticated_user_can_update_profile_and_password(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Old Name',
+            'email' => 'old@example.com',
+            'password' => Hash::make('password123'),
+            'interests' => ['chess'],
+        ]);
+        $token = auth('api')->login($user);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/me', [
+                'name' => 'New Name',
+                'email' => 'new@example.com',
+                'interests' => ['Chess', 'Reading'],
+                'role' => 'admin',
+            ])
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.name', 'New Name')
+            ->assertJsonPath('data.email', 'new@example.com')
+            ->assertJsonPath('data.role', 'user')
+            ->assertJsonPath('data.interests', ['chess', 'reading']);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/password', [
+                'current_password' => 'wrong-password',
+                'password' => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ])
+            ->assertUnprocessable();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/password', [
+                'current_password' => 'password123',
+                'password' => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ])
+            ->assertOk()
+            ->assertJsonPath('success', true);
     }
 }

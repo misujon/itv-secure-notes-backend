@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Admin\AggregationController as AdminAggregationC
 use App\Http\Controllers\Api\V1\Admin\NoteController as AdminNoteController;
 use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\InterestController;
 use App\Http\Controllers\Api\V1\NoteController;
 use App\Http\Controllers\Api\V1\PostController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,8 @@ Route::prefix('v1')->group(function (): void {
 
         Route::middleware('auth:api')->group(function (): void {
             Route::get('/me', [AuthController::class, 'me']);
+            Route::patch('/me', [AuthController::class, 'updateProfile']);
+            Route::patch('/password', [AuthController::class, 'updatePassword']);
             Route::post('/logout', [AuthController::class, 'logout']);
             Route::post('/refresh', [AuthController::class, 'refresh']);
         });
@@ -69,4 +72,5 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::middleware('object.id')->get('/users/{id}/posts', [PostController::class, 'userPosts']);
+    Route::get('/interests', [InterestController::class, 'index']);
 });

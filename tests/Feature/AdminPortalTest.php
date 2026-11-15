@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Enums\Permission;
 use App\Enums\UserRole;
+use App\Models\Interest;
 use App\Models\Note;
 use App\Models\Post;
 use App\Models\User;
@@ -336,5 +337,46 @@ class AdminPortalTest extends TestCase
         $this->post('/admin/users/'.$user->_id.'/restore')
             ->assertRedirect(route('admin.users.index', ['trashed' => 1]));
         $this->assertNotNull(User::query()->find($user->_id));
+    }
+
+    public function test_admin_can_crud_soft_delete_and_restore_interests(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin, 'web');
+
+        $this->get('/admin/interests/manage')
+            ->assertOk();
+
+        $this->post('/admin/interests/manage', [
+            'name' => '  Photography ',
+        ])->assertRedirect(route('admin.interests.manage.index'));
+
+        $interest = Interest::query()->where('name', 'photography')->first();
+        $this->assertNotNull($interest);
+
+        $this->get('/admin/interests/manage')
+            ->assertOk()
+            ->assertSee('photography');
+
+        $this->patch('/admin/interests/manage/'.$interest->_id, [
+            'name' => 'astrophotography',
+        ])->assertRedirect(route('admin.interests.manage.index'));
+
+        $this->assertSame('astrophotography', $interest->fresh()?->name);
+
+        $this->delete('/admin/interests/manage/'.$interest->_id)
+            ->assertRedirect(route('admin.interests.manage.index'));
+
+        $this->assertNull(Interest::query()->find($interest->_id));
+        $this->assertNotNull(Interest::onlyTrashed()->find($interest->_id));
+
+        $this->get('/admin/interests/manage?trashed=1')
+            ->assertOk()
+            ->assertSee('astrophotography');
+
+        $this->post('/admin/interests/manage/'.$interest->_id.'/restore')
+            ->assertRedirect(route('admin.interests.manage.index', ['trashed' => 1]));
+
+        $this->assertNotNull(Interest::query()->find($interest->_id));
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AllNoteController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InterestController;
+use App\Http\Controllers\Admin\ManageInterestController;
 use App\Http\Controllers\Admin\MyNoteController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\ProfileController;
@@ -67,6 +68,32 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         });
 
         Route::get('/interests', InterestController::class)->name('interests.index');
+
+        Route::prefix('interests/manage')->name('interests.manage.')->group(function (): void {
+            Route::get('/', [ManageInterestController::class, 'index'])->name('index');
+            Route::get('/create', [ManageInterestController::class, 'create'])->name('create');
+            Route::post('/', [ManageInterestController::class, 'store'])->name('store');
+
+            Route::middleware('object.id:interest')->group(function (): void {
+                Route::get('/{interest}/edit', [ManageInterestController::class, 'edit'])->name('edit');
+                Route::match(['put', 'patch'], '/{interest}', [ManageInterestController::class, 'update'])->name('update');
+                Route::delete('/{interest}', [ManageInterestController::class, 'destroy'])->name('destroy');
+                Route::post('/{interest}/restore', [ManageInterestController::class, 'restore'])->name('restore');
+            });
+        });
+
+        Route::prefix('interests/manage')->name('interests.manage.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Admin\ManageInterestController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\ManageInterestController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\ManageInterestController::class, 'store'])->name('store');
+
+            Route::middleware('object.id:interest')->group(function (): void {
+                Route::get('/{interest}/edit', [\App\Http\Controllers\Admin\ManageInterestController::class, 'edit'])->name('edit');
+                Route::match(['put', 'patch'], '/{interest}', [\App\Http\Controllers\Admin\ManageInterestController::class, 'update'])->name('update');
+                Route::delete('/{interest}', [\App\Http\Controllers\Admin\ManageInterestController::class, 'destroy'])->name('destroy');
+                Route::post('/{interest}/restore', [\App\Http\Controllers\Admin\ManageInterestController::class, 'restore'])->name('restore');
+            });
+        });
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
