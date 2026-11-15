@@ -22,9 +22,16 @@ class UserService
         return $this->userRepository->paginate($perPage);
     }
 
-    public function listUsersForAdmin(?string $search = null, ?string $role = null, int $perPage = 15): LengthAwarePaginator
+    public function listUsersForAdmin(?string $search = null, ?string $role = null, int $perPage = 15, bool $onlyTrashed = false): LengthAwarePaginator
     {
-        return $this->userRepository->paginateForAdmin($search, $role, $perPage);
+        return $this->userRepository->paginateForAdmin($search, $role, $perPage, $onlyTrashed);
+    }
+
+    public function restoreUser(string $id): void
+    {
+        if (! $this->userRepository->restoreById($id)) {
+            throw (new ModelNotFoundException)->setModel(User::class, [$id]);
+        }
     }
 
     public function getUserById(string $id): User

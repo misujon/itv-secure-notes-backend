@@ -17,9 +17,9 @@ class PostService
         private readonly PostRepository $postRepository,
     ) {}
 
-    public function listPosts(int $perPage = 20): LengthAwarePaginator
+    public function listPosts(int $perPage = 20, bool $onlyTrashed = false): LengthAwarePaginator
     {
-        return $this->postRepository->paginateAll($perPage);
+        return $this->postRepository->paginateAll($perPage, $onlyTrashed);
     }
 
     /**
@@ -72,5 +72,12 @@ class PostService
         Gate::forUser($user)->authorize('delete', $post);
 
         $this->postRepository->delete($post);
+    }
+
+    public function restoreForAdmin(string $id): void
+    {
+        if (! $this->postRepository->restoreById($id)) {
+            throw (new ModelNotFoundException)->setModel(Post::class, [$id]);
+        }
     }
 }

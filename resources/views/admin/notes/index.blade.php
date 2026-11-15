@@ -14,6 +14,9 @@
         subtitle="Read-only visibility across all users' notes."
     >
         <x-slot:actions>
+            <x-admin.button variant="secondary" :href="route('admin.notes.index', $onlyTrashed ? [] : ['trashed' => 1])">
+                {{ $onlyTrashed ? 'Active Notes' : 'Trash' }}
+            </x-admin.button>
             <x-admin.button :href="route('admin.my-notes.index')" variant="secondary">
                 Manage My Notes
             </x-admin.button>
@@ -65,14 +68,34 @@
                                     {{ $note->updated_at?->format('M j, Y') }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <div class="inline-flex items-center gap-3">
-                                        <a href="{{ route('admin.notes.show', (string) $note->_id) }}" class="text-xs font-medium text-slate-600 hover:text-app-heading">
-                                            View
-                                        </a>
-                                        <a href="{{ route('admin.notes.edit', (string) $note->_id) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">
-                                            Edit
-                                        </a>
-                                    </div>
+                                    @if ($onlyTrashed)
+                                        <form method="POST" action="{{ route('admin.notes.restore', (string) $note->_id) }}" class="inline">
+                                            @csrf
+                                            <button type="submit" class="text-xs font-medium text-brand-600 hover:text-brand-700 cursor-pointer">
+                                                Restore
+                                            </button>
+                                        </form>
+                                    @else
+                                        <div class="inline-flex items-center gap-3">
+                                            <a href="{{ route('admin.notes.show', (string) $note->_id) }}" class="text-xs font-medium text-slate-600 hover:text-app-heading">
+                                                View
+                                            </a>
+                                            <a href="{{ route('admin.notes.edit', (string) $note->_id) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">
+                                                Edit
+                                            </a>
+                                            <x-admin.confirm-dialog
+                                                title="Delete note"
+                                                :message="'Move \''.$note->title.'\' to trash?'"
+                                                :action="route('admin.notes.destroy', (string) $note->_id)"
+                                            >
+                                                <x-slot:trigger>
+                                                    <button type="button" class="text-xs font-medium text-status-danger hover:text-red-700 cursor-pointer">
+                                                        Delete
+                                                    </button>
+                                                </x-slot:trigger>
+                                            </x-admin.confirm-dialog>
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

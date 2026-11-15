@@ -19,12 +19,14 @@ class PostController extends Controller
         private readonly PostService $postService,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $posts = $this->postService->listPosts(15);
+        $onlyTrashed = $request->boolean('trashed');
+        $posts = $this->postService->listPosts(15, $onlyTrashed);
 
         return view('admin.posts.index', [
             'posts' => $posts,
+            'onlyTrashed' => $onlyTrashed,
         ]);
     }
 
@@ -81,6 +83,15 @@ class PostController extends Controller
 
         return redirect()
             ->route('admin.posts.index')
-            ->with('status', 'Post deleted successfully.');
+            ->with('status', 'Post moved to trash.');
+    }
+
+    public function restore(string $post): RedirectResponse
+    {
+        $this->postService->restoreForAdmin($post);
+
+        return redirect()
+            ->route('admin.posts.index', ['trashed' => 1])
+            ->with('status', 'Post restored successfully.');
     }
 }

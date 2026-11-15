@@ -27,18 +27,30 @@ class UserController extends Controller
     {
         $search = $request->string('search')->toString();
         $role = $request->string('role')->toString();
+        $onlyTrashed = $request->boolean('trashed');
 
         $users = $this->userService->listUsersForAdmin(
             $search !== '' ? $search : null,
             $role !== '' ? $role : null,
-            15
+            15,
+            $onlyTrashed
         );
 
         return view('admin.users.index', [
             'users' => $users,
             'search' => $search,
             'role' => $role,
+            'onlyTrashed' => $onlyTrashed,
         ]);
+    }
+
+    public function restore(string $user): RedirectResponse
+    {
+        $this->userService->restoreUser($user);
+
+        return redirect()
+            ->route('admin.users.index', ['trashed' => 1])
+            ->with('status', 'User restored successfully.');
     }
 
     public function create(): View

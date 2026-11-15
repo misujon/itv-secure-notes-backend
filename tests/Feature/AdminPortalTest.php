@@ -292,5 +292,49 @@ class AdminPortalTest extends TestCase
             ->assertRedirect(route('admin.posts.index'));
 
         $this->assertNull(Post::query()->find($post->_id));
+        $this->assertNotNull(Post::onlyTrashed()->find($post->_id));
+
+        $this->post('/admin/posts/'.$post->_id.'/restore')
+            ->assertRedirect(route('admin.posts.index', ['trashed' => 1]));
+
+        $this->assertNotNull(Post::query()->find($post->_id));
+    }
+
+    public function test_admin_can_soft_delete_and_restore_users_and_notes(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->create(['name' => 'Soft Delete User']);
+        $note = Note::factory()->create([
+            'user_id' => $user->_id,
+            'title' => 'Soft Delete Note',
+        ]);
+
+        $this->actingAs($admin, 'web');
+
+        $this->delete('/admin/notes/'.$note->_id)
+            ->assertRedirect(route('admin.notes.index'));
+        $this->assertNull(Note::query()->find($note->_id));
+        $this->assertNotNull(Note::onlyTrashed()->find($note->_id));
+
+        $this->get('/admin/notes?trashed=1')
+            ->assertOk()
+            ->assertSee('Soft Delete Note');
+
+        $this->post('/admin/notes/'.$note->_id.'/restore')
+            ->assertRedirect(route('admin.notes.index', ['trashed' => 1]));
+        $this->assertNotNull(Note::query()->find($note->_id));
+
+        $this->delete('/admin/users/'.$user->_id)
+            ->assertRedirect(route('admin.users.index'));
+        $this->assertNull(User::query()->find($user->_id));
+        $this->assertNotNull(User::onlyTrashed()->find($user->_id));
+
+        $this->get('/admin/users?trashed=1')
+            ->assertOk()
+            ->assertSee('Soft Delete User');
+
+        $this->post('/admin/users/'.$user->_id.'/restore')
+            ->assertRedirect(route('admin.users.index', ['trashed' => 1]));
+        $this->assertNotNull(User::query()->find($user->_id));
     }
 }

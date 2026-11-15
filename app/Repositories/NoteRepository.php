@@ -20,13 +20,25 @@ class NoteRepository
             ->paginate($perPage);
     }
 
-    public function paginateAll(int $perPage = 20): LengthAwarePaginator
+    public function paginateAll(int $perPage = 20, bool $onlyTrashed = false): LengthAwarePaginator
     {
-        return Note::query()
-            ->with('user')
+        $query = Note::query()->with('user');
+
+        if ($onlyTrashed) {
+            $query->onlyTrashed();
+        }
+
+        return $query
             ->orderByDesc('created_at')
             ->orderByDesc('_id')
             ->paginate($perPage);
+    }
+
+    public function restoreById(string $id): bool
+    {
+        $note = Note::onlyTrashed()->where('_id', new ObjectId($id))->first();
+
+        return $note !== null && (bool) $note->restore();
     }
 
     public function findById(string $id, bool $withUser = false): ?Note

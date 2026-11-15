@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use MongoDB\Laravel\Eloquent\Casts\ObjectId as ObjectIdCast;
 use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\SoftDeletes;
 
 class Note extends Model
 {
     /** @use HasFactory<NoteFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $connection = 'mongodb';
 

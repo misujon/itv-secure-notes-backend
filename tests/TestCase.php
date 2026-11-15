@@ -22,14 +22,14 @@ abstract class TestCase extends BaseTestCase
 
         if (! static::$migrated) {
             $this->artisan('migrate:fresh', ['--no-interaction' => true]);
-            Role::query()->delete();
-            Permission::query()->delete();
+            Role::withTrashed()->forceDelete();
+            Permission::withTrashed()->forceDelete();
             $this->seed(RolePermissionSeeder::class);
             static::$migrated = true;
         }
 
-        User::query()->delete();
-        Note::query()->delete();
-        Post::query()->delete();
+        User::withTrashed()->forceDelete();
+        Note::withTrashed()->forceDelete();
+        Post::withTrashed()->forceDelete();
     }
 }

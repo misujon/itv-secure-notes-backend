@@ -35,6 +35,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
                 Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
                 Route::match(['put', 'patch'], '/{user}', [UserController::class, 'update'])->name('update');
                 Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+                Route::post('/{user}/restore', [UserController::class, 'restore'])->name('restore');
                 Route::get('/{user}/posts', UserPostController::class)->name('posts');
             });
         });
@@ -46,6 +47,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
                 Route::get('/{note}', [AllNoteController::class, 'show'])->name('show');
                 Route::get('/{note}/edit', [AllNoteController::class, 'edit'])->name('edit');
                 Route::match(['put', 'patch'], '/{note}', [AllNoteController::class, 'update'])->name('update');
+                Route::delete('/{note}', [AllNoteController::class, 'destroy'])->name('destroy');
+                Route::post('/{note}/restore', [AllNoteController::class, 'restore'])->name('restore');
             });
         });
 
@@ -59,6 +62,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
                 Route::get('/{post}/edit', [AdminPostController::class, 'edit'])->name('edit');
                 Route::match(['put', 'patch'], '/{post}', [AdminPostController::class, 'update'])->name('update');
                 Route::delete('/{post}', [AdminPostController::class, 'destroy'])->name('destroy');
+                Route::post('/{post}/restore', [AdminPostController::class, 'restore'])->name('restore');
             });
         });
 

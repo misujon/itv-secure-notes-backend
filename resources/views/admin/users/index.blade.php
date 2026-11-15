@@ -14,6 +14,9 @@
         subtitle="Manage registered users, roles, and profile interests."
     >
         <x-slot:actions>
+            <x-admin.button variant="secondary" :href="route('admin.users.index', $onlyTrashed ? [] : ['trashed' => 1])">
+                {{ $onlyTrashed ? 'Active Users' : 'Trash' }}
+            </x-admin.button>
             <x-admin.button :href="route('admin.users.create')">
                 New User
             </x-admin.button>
@@ -92,25 +95,34 @@
                                     {{ $user->created_at?->format('M j, Y') }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <div class="inline-flex items-center gap-2">
-                                        <a href="{{ route('admin.users.show', (string) $user->_id) }}" class="text-xs font-medium text-slate-600 hover:text-app-heading">
-                                            View
-                                        </a>
-                                        <a href="{{ route('admin.users.edit', (string) $user->_id) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">
-                                            Edit
-                                        </a>
-                                        <x-admin.confirm-dialog
-                                            title="Delete user"
-                                            :message="'Delete '.$user->name.'? Existing notes and posts are preserved.'"
-                                            :action="route('admin.users.destroy', (string) $user->_id)"
-                                        >
-                                            <x-slot:trigger>
-                                                <button type="button" class="text-xs font-medium text-status-danger hover:text-red-700 cursor-pointer">
-                                                    Delete
-                                                </button>
-                                            </x-slot:trigger>
-                                        </x-admin.confirm-dialog>
-                                    </div>
+                                    @if ($onlyTrashed)
+                                        <form method="POST" action="{{ route('admin.users.restore', (string) $user->_id) }}" class="inline">
+                                            @csrf
+                                            <button type="submit" class="text-xs font-medium text-brand-600 hover:text-brand-700 cursor-pointer">
+                                                Restore
+                                            </button>
+                                        </form>
+                                    @else
+                                        <div class="inline-flex items-center gap-2">
+                                            <a href="{{ route('admin.users.show', (string) $user->_id) }}" class="text-xs font-medium text-slate-600 hover:text-app-heading">
+                                                View
+                                            </a>
+                                            <a href="{{ route('admin.users.edit', (string) $user->_id) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">
+                                                Edit
+                                            </a>
+                                            <x-admin.confirm-dialog
+                                                title="Delete user"
+                                                :message="'Move '.$user->name.' to trash? Existing notes and posts are preserved.'"
+                                                :action="route('admin.users.destroy', (string) $user->_id)"
+                                            >
+                                                <x-slot:trigger>
+                                                    <button type="button" class="text-xs font-medium text-status-danger hover:text-red-700 cursor-pointer">
+                                                        Delete
+                                                    </button>
+                                                </x-slot:trigger>
+                                            </x-admin.confirm-dialog>
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

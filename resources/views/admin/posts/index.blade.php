@@ -14,6 +14,9 @@
         subtitle="Create, edit, and manage community posts."
     >
         <x-slot:actions>
+            <x-admin.button variant="secondary" :href="route('admin.posts.index', $onlyTrashed ? [] : ['trashed' => 1])">
+                {{ $onlyTrashed ? 'Active Posts' : 'Trash' }}
+            </x-admin.button>
             <x-admin.button :href="route('admin.posts.create')">
                 New Post
             </x-admin.button>
@@ -67,25 +70,34 @@
                                     {{ $post->updated_at?->format('M j, Y') }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <div class="inline-flex items-center gap-3">
-                                        <a href="{{ route('admin.posts.show', (string) $post->_id) }}" class="text-xs font-medium text-slate-600 hover:text-app-heading">
-                                            View
-                                        </a>
-                                        <a href="{{ route('admin.posts.edit', (string) $post->_id) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">
-                                            Edit
-                                        </a>
-                                        <x-admin.confirm-dialog
-                                            title="Delete post"
-                                            :message="'Delete \''.$post->title.'\'? This cannot be undone.'"
-                                            :action="route('admin.posts.destroy', (string) $post->_id)"
-                                        >
-                                            <x-slot:trigger>
-                                                <button type="button" class="text-xs font-medium text-status-danger hover:text-red-700 cursor-pointer">
-                                                    Delete
-                                                </button>
-                                            </x-slot:trigger>
-                                        </x-admin.confirm-dialog>
-                                    </div>
+                                    @if ($onlyTrashed)
+                                        <form method="POST" action="{{ route('admin.posts.restore', (string) $post->_id) }}" class="inline">
+                                            @csrf
+                                            <button type="submit" class="text-xs font-medium text-brand-600 hover:text-brand-700 cursor-pointer">
+                                                Restore
+                                            </button>
+                                        </form>
+                                    @else
+                                        <div class="inline-flex items-center gap-3">
+                                            <a href="{{ route('admin.posts.show', (string) $post->_id) }}" class="text-xs font-medium text-slate-600 hover:text-app-heading">
+                                                View
+                                            </a>
+                                            <a href="{{ route('admin.posts.edit', (string) $post->_id) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">
+                                                Edit
+                                            </a>
+                                            <x-admin.confirm-dialog
+                                                title="Delete post"
+                                                :message="'Move \''.$post->title.'\' to trash?'"
+                                                :action="route('admin.posts.destroy', (string) $post->_id)"
+                                            >
+                                                <x-slot:trigger>
+                                                    <button type="button" class="text-xs font-medium text-status-danger hover:text-red-700 cursor-pointer">
+                                                        Delete
+                                                    </button>
+                                                </x-slot:trigger>
+                                            </x-admin.confirm-dialog>
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

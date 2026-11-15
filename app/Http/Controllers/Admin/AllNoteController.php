@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Note\UpdateNoteRequest;
 use App\Services\NoteService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AllNoteController extends Controller
@@ -16,12 +17,14 @@ class AllNoteController extends Controller
         private readonly NoteService $noteService,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $notes = $this->noteService->listAllForAdmin(15);
+        $onlyTrashed = $request->boolean('trashed');
+        $notes = $this->noteService->listAllForAdmin(15, $onlyTrashed);
 
         return view('admin.notes.index', [
             'notes' => $notes,
+            'onlyTrashed' => $onlyTrashed,
         ]);
     }
 
@@ -50,5 +53,23 @@ class AllNoteController extends Controller
         return redirect()
             ->route('admin.notes.show', $note)
             ->with('status', 'Note updated successfully.');
+    }
+
+    public function destroy(string $note): RedirectResponse
+    {
+        $this->noteService->deleteForAdmin($note);
+
+        return redirect()
+            ->route('admin.notes.index')
+            ->with('status', 'Note moved to trash.');
+    }
+
+    public function restore(string $note): RedirectResponse
+    {
+        $this->noteService->restoreForAdmin($note);
+
+        return redirect()
+            ->route('admin.notes.index', ['trashed' => 1])
+            ->with('status', 'Note restored successfully.');
     }
 }

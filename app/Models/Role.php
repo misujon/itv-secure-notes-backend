@@ -6,9 +6,12 @@ namespace App\Models;
 
 use App\Enums\Permission as PermissionEnum;
 use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\SoftDeletes;
 
 class Role extends Model
 {
+    use SoftDeletes;
+
     protected $connection = 'mongodb';
 
     protected $table = 'roles';

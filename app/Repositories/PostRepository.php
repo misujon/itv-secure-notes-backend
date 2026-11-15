@@ -11,13 +11,25 @@ use MongoDB\BSON\ObjectId;
 
 class PostRepository
 {
-    public function paginateAll(int $perPage = 20): LengthAwarePaginator
+    public function paginateAll(int $perPage = 20, bool $onlyTrashed = false): LengthAwarePaginator
     {
-        return Post::query()
-            ->with('user')
+        $query = Post::query()->with('user');
+
+        if ($onlyTrashed) {
+            $query->onlyTrashed();
+        }
+
+        return $query
             ->orderByDesc('created_at')
             ->orderByDesc('_id')
             ->paginate($perPage);
+    }
+
+    public function restoreById(string $id): bool
+    {
+        $post = Post::onlyTrashed()->where('_id', new ObjectId($id))->first();
+
+        return $post !== null && (bool) $post->restore();
     }
 
     public function findById(string $id): ?Post
@@ -72,13 +84,14 @@ class PostRepository
         $skip = ($page - 1) * $perPage;
 
         $pipeline = [
-            ['$match' => ['_id' => new ObjectId($userId)]],
+            ['$match' => ['_id' => new ObjectId($userId), 'deleted_at' => null]],
             [
                 '$lookup' => [
                     'from' => 'posts',
                     'localField' => '_id',
                     'foreignField' => 'user_id',
                     'pipeline' => [
+                        ['$match' => ['deleted_at' => null]],
                         ['$sort' => ['created_at' => -1, '_id' => -1]],
                         [
                             '$facet' => [

@@ -22,9 +22,9 @@ class NoteService
         return $this->noteRepository->paginateForUser((string) $user->_id, $perPage);
     }
 
-    public function listAllForAdmin(int $perPage = 20): LengthAwarePaginator
+    public function listAllForAdmin(int $perPage = 20, bool $onlyTrashed = false): LengthAwarePaginator
     {
-        return $this->noteRepository->paginateAll($perPage);
+        return $this->noteRepository->paginateAll($perPage, $onlyTrashed);
     }
 
     /**
@@ -105,6 +105,19 @@ class NoteService
         Gate::forUser($user)->authorize('delete', $note);
 
         $this->noteRepository->delete($note);
+    }
+
+    public function deleteForAdmin(string $id): void
+    {
+        $note = $this->findOrFail($id);
+        $this->noteRepository->delete($note);
+    }
+
+    public function restoreForAdmin(string $id): void
+    {
+        if (! $this->noteRepository->restoreById($id)) {
+            throw (new ModelNotFoundException)->setModel(Note::class, [$id]);
+        }
     }
 
     private function findOrFail(string $id): Note

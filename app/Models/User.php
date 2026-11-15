@@ -11,12 +11,13 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use MongoDB\Laravel\Auth\User as Authenticatable;
+use MongoDB\Laravel\Eloquent\SoftDeletes;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasMongoRoles;
+    use HasFactory, HasMongoRoles, SoftDeletes;
 
     public const ROLE_USER = 'user';
 

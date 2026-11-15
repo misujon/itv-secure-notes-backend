@@ -46,6 +46,13 @@ class UserRepository
         return (bool) $user->delete();
     }
 
+    public function restoreById(string $id): bool
+    {
+        $user = User::onlyTrashed()->where('_id', new ObjectId($id))->first();
+
+        return $user !== null && (bool) $user->restore();
+    }
+
     public function paginate(int $perPage = 20): LengthAwarePaginator
     {
         return User::query()
@@ -76,9 +83,13 @@ class UserRepository
             ->get();
     }
 
-    public function paginateForAdmin(?string $search = null, ?string $role = null, int $perPage = 15): LengthAwarePaginator
+    public function paginateForAdmin(?string $search = null, ?string $role = null, int $perPage = 15, bool $onlyTrashed = false): LengthAwarePaginator
     {
         $query = User::query();
+
+        if ($onlyTrashed) {
+            $query->onlyTrashed();
+        }
 
         if ($role !== null && $role !== '') {
             $query->where('role', $role);
@@ -108,6 +119,7 @@ class UserRepository
         $skip = ($page - 1) * $perPage;
 
         $pipeline = [
+            ['$match' => ['deleted_at' => null]],
             ['$unwind' => '$interests'],
             [
                 '$group' => [
